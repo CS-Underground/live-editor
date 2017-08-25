@@ -57746,7 +57746,7 @@ ASTTransforms.rewriteContextVariables = function (envName, context) {
             // variable declarations with multiple declarators, e.g. var x = 5, y = 10;
             // because we are handling all of the declarators directly (as opposed
             // to iterating over node.declarators when node.type === "VariableDeclaration").
-            if (node.type === "VariableDeclarator") {
+            if (node.type === "VariableDeclarator" || node.type === "FunctionDeclaration") {
                 var scope = scopes[scopes.length - 1];
                 scope[node.id.name] = true;
             }
@@ -57893,6 +57893,30 @@ ASTTransforms.rewriteContextVariables = function (envName, context) {
                             return b.VariableDeclaration([decl], node.kind);
                         });
                     }
+                }
+            } else if (node.type === "FunctionDeclaration") {
+                var decl = node;
+
+                // Rewrite function decalarations in the global scope
+                // function g() {} becomes __env__.g = function() {}
+                if (scopes.length === 1) {
+                    // is it in the global scope?
+
+                    // generate a function expression
+                    var init = escodegen.generate({
+                        "type": "FunctionExpression",
+                        "id": null,
+                        "params": decl.params,
+                        "body": {
+                            "type": "BlockStatement",
+                            "body": b.BlockStatement(decl.body)
+                        },
+                        "generator": decl.generator,
+                        "expression": decl.expression,
+                        "async": decl.async
+                    });
+
+                    return b.ExpressionStatement(b.AssignmentExpression(b.MemberExpression(b.Identifier(envName), b.Identifier(decl.id.name)), "=", init));
                 }
             } else if (/^Function/.test(node.type)) {
                 // Remove all local variables from the scopes stack as we exit
