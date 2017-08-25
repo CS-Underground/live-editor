@@ -57746,7 +57746,7 @@ ASTTransforms.rewriteContextVariables = function (envName, context) {
             // variable declarations with multiple declarators, e.g. var x = 5, y = 10;
             // because we are handling all of the declarators directly (as opposed
             // to iterating over node.declarators when node.type === "VariableDeclaration").
-            if (node.type === "VariableDeclarator" || node.type === "FunctionDeclaration") {
+            if (node.type === "VariableDeclarator") {
                 var scope = scopes[scopes.length - 1];
                 scope[node.id.name] = true;
             }
