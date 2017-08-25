@@ -6404,7 +6404,6 @@ if (typeof module === 'object' && module && typeof module.exports === 'object') 
 
 })(window);
 
-this["Handlebars"]["templates"]["dev-record"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
 
 $(document).delegate("a.ui-button", {
     mouseenter: function mouseenter() {
