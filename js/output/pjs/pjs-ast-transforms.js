@@ -84,7 +84,7 @@ ASTTransforms.rewriteContextVariables = function(envName, context) {
             // variable declarations with multiple declarators, e.g. var x = 5, y = 10;
             // because we are handling all of the declarators directly (as opposed
             // to iterating over node.declarators when node.type === "VariableDeclaration").
-            if (node.type === "VariableDeclarator") {
+            if (node.type === "VariableDeclarator" || node.type === "FunctionDeclaration") {
                 let scope = scopes[scopes.length - 1];
                 scope[node.id.name] = true;
             }
@@ -155,7 +155,7 @@ ASTTransforms.rewriteContextVariables = function(envName, context) {
                     if (decl.init === null && parent.type !== "ForInStatement" && parent.type !== "ForOfStatement") {
                         return;
                     }
-
+						  
                     // Rewrite all function declarations, e.g.
                     // var foo = function () {} => __env__.foo = function () {}
                     // that appear in the global scope. Draw loop methods aren't
@@ -254,7 +254,38 @@ ASTTransforms.rewriteContextVariables = function(envName, context) {
                     }
                 }
 
-            } else if (/^Function/.test(node.type)) {
+            } else if (node.type === "FunctionDeclaration") {
+					 let decl = node;
+					
+					 // Rewrite function decalarations in the global scope
+					 // function g() {} becomes __env__.g = function() {}
+					 if(scopes.length === 1) { // is it in the global scope?
+						 
+						// generate a function expression
+						let init = escodegen.generate({
+							"type": "FunctionExpression",
+							"id": null,
+							"params": decl.params,
+							"body": {
+						   	"type": "BlockStatement",
+								"body": b.BlockStatement(decl.body)
+							},
+							"generator": decl.generator,		
+							"expression": decl.expression,
+							"async": decl.async
+						 });
+						 
+						 return b.ExpressionStatement(
+							  b.AssignmentExpression(
+									b.MemberExpression(
+										 b.Identifier(envName),
+										 b.Identifier(decl.id.name)),
+									"=",
+								   init
+							  )
+						 );
+					 }
+				} else if (/^Function/.test(node.type)) {
                 // Remove all local variables from the scopes stack as we exit
                 // the function expression/declaration.
                 scopes.pop();
