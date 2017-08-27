@@ -132,6 +132,7 @@ class PJSCodeInjector {
             this.processing.isNaN = window.isNaN;
             this.processing.Number = window.Number;
             this.processing.Date = window.Date;
+			   this.processing.Symbol = window.Symbol;
         }
 
         Object.assign(this.processing, {
