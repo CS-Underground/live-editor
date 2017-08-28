@@ -13967,7 +13967,14 @@ Lexer.prototype = {
         value: "==="
       };
     }
-
+	 
+	 if (ch1 === "*" && ch2 === "*" && ch3 === "=") {
+      return {
+        type: Token.Punctuator,
+        value: "**="
+      };
+    }
+	 
     if (ch1 === "!" && ch2 === "=" && ch3 === "=") {
       return {
         type: Token.Punctuator,
@@ -14006,7 +14013,7 @@ Lexer.prototype = {
 
     // 2-character punctuators: <= >= == != ++ -- << >> && ||
     // += -= *= %= &= |= ^= /=
-    if (ch1 === ch2 && ("+-<>&|".indexOf(ch1) >= 0)) {
+    if (ch1 === ch2 && ("+-<>*&|".indexOf(ch1) >= 0)) {
       return {
         type: Token.Punctuator,
         value: ch1 + ch2
@@ -20969,6 +20976,7 @@ var JSHINT = (function() {
   assignop("+=", "assignadd", 20);
   assignop("-=", "assignsub", 20);
   assignop("*=", "assignmult", 20);
+  assignop("**=", "assignexp", 20);
   assignop("/=", "assigndiv", 20).nud = function() {
     error("E014");
   };
@@ -21153,6 +21161,7 @@ var JSHINT = (function() {
     this.right = expression(130);
     return this;
   }, 130);
+  infix("**", "exp", 140);
   infix("*", "mult", 140);
   infix("/", "div", 140);
   infix("%", "mod", 140);
