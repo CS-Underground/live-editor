@@ -14011,7 +14011,7 @@ Lexer.prototype = {
       };
     }
 
-    // 2-character punctuators: <= >= == != ++ -- << >> && ||
+    // 2-character punctuators: <= >= == != ++ -- << >> && || **
     // += -= *= %= &= |= ^= /=
     if (ch1 === ch2 && ("+-<>*&|".indexOf(ch1) >= 0)) {
       return {
