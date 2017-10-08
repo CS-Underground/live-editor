@@ -9291,6 +9291,7 @@
       if (arguments.length === 0 && bufferLen === 0) {
         Processing.logger.log("");
       } else if (arguments.length !== 0) {
+		  message = (typeof message === "symbol") ? message.toString() : message;
         Processing.logger.log(message);
       }
     };
@@ -9302,6 +9303,7 @@
      * @see #join
      */
     p.print = function(message) {
+		message = (typeof message === "symbol") ? message.toString() : message;
       logBuffer.push(message);
     };
 

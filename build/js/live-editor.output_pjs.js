@@ -168,6 +168,7 @@ var PJSCodeInjector = (function () {
                 this.processing.isNaN = window.isNaN;
                 this.processing.Number = window.Number;
                 this.processing.Date = window.Date;
+                this.processing.Symbol = window.Symbol;
             }
 
             Object.assign(this.processing, {
@@ -178,7 +179,7 @@ var PJSCodeInjector = (function () {
                 /*loadImage: (file) => {
                     throw {message: "Use getImage instead of loadImage."};
                 },
-                  requestImage: (file) => {
+                 requestImage: (file) => {
                     throw {message: "Use getImage instead of requestImage."};
                 },*/
 

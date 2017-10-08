@@ -9383,6 +9383,7 @@
       if (arguments.length === 0 && bufferLen === 0) {
         Processing.logger.log("");
       } else if (arguments.length !== 0) {
+		  message = (typeof message === "symbol") ? message.toString() : message;
         Processing.logger.log(message);
       }
     };
@@ -9394,6 +9395,7 @@
      * @see #join
      */
     p.print = function(message) {
+		message = (typeof message === "symbol") ? message.toString() : message;
       logBuffer.push(message);
     };
 
@@ -34101,7 +34103,14 @@ Lexer.prototype = {
         value: "==="
       };
     }
-
+	 
+	 if (ch1 === "*" && ch2 === "*" && ch3 === "=") {
+      return {
+        type: Token.Punctuator,
+        value: "**="
+      };
+    }
+	 
     if (ch1 === "!" && ch2 === "=" && ch3 === "=") {
       return {
         type: Token.Punctuator,
@@ -34138,9 +34147,9 @@ Lexer.prototype = {
       };
     }
 
-    // 2-character punctuators: <= >= == != ++ -- << >> && ||
+    // 2-character punctuators: <= >= == != ++ -- << >> && || **
     // += -= *= %= &= |= ^= /=
-    if (ch1 === ch2 && ("+-<>&|".indexOf(ch1) >= 0)) {
+    if (ch1 === ch2 && ("+-<>*&|".indexOf(ch1) >= 0)) {
       return {
         type: Token.Punctuator,
         value: ch1 + ch2
@@ -41103,6 +41112,7 @@ var JSHINT = (function() {
   assignop("+=", "assignadd", 20);
   assignop("-=", "assignsub", 20);
   assignop("*=", "assignmult", 20);
+  assignop("**=", "assignexp", 20);
   assignop("/=", "assigndiv", 20).nud = function() {
     error("E014");
   };
@@ -41287,6 +41297,7 @@ var JSHINT = (function() {
     this.right = expression(130);
     return this;
   }, 130);
+  infix("**", "exp", 140);
   infix("*", "mult", 140);
   infix("/", "div", 140);
   infix("%", "mod", 140);
@@ -57810,7 +57821,7 @@ ASTTransforms.rewriteContextVariables = function (envName, context) {
 
                     // If the current variable declaration has an "init" value of null
                     //  (IE. no init value given to parser), and the current node type
-                    //  doesn't match "ForInStatement" (a for-in loop), exit the
+                    //  doesn't match "ForInStatement" (a for-in loop) or "ForOfStatement" (a for-of loop), exit the
                     //  function.
                     if (decl.init === null && parent.type !== "ForInStatement" && parent.type !== "ForOfStatement") {
                         return;
@@ -57868,7 +57879,9 @@ ASTTransforms.rewriteContextVariables = function (envName, context) {
 
                             return {
                                 type: "SequenceExpression",
-                                expressions: node.declarations.map(function (decl) {
+                                expressions: node.declarations.filter(function (d) {
+                                    return d.init !== null;
+                                }).map(function (decl) {
                                     return b.AssignmentExpression(b.MemberExpression(b.Identifier(envName), b.Identifier(decl.id.name)), "=", decl.init);
                                 })
                             };

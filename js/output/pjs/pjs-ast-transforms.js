@@ -150,7 +150,7 @@ ASTTransforms.rewriteContextVariables = function(envName, context) {
 
                     // If the current variable declaration has an "init" value of null
                     //  (IE. no init value given to parser), and the current node type
-                    //  doesn't match "ForInStatement" (a for-in loop), exit the
+                    //  doesn't match "ForInStatement" (a for-in loop) or "ForOfStatement" (a for-of loop), exit the
                     //  function.
                     if (decl.init === null && parent.type !== "ForInStatement" && parent.type !== "ForOfStatement") {
                         return;
@@ -224,13 +224,15 @@ ASTTransforms.rewriteContextVariables = function(envName, context) {
 
                             return {
                                 type: "SequenceExpression",
-                                expressions: node.declarations.map(decl => {
-                                    return b.AssignmentExpression(
-                                        b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
-                                        "=",
-                                        decl.init
-                                    );
-                                })
+                                expressions: node.declarations
+                                    .filter(d => d.init !== null)
+                                    .map(decl => {
+                                        return b.AssignmentExpression(
+                                            b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
+                                            "=",
+                                            decl.init
+                                        );
+                                    })
                             };
                         }
 
